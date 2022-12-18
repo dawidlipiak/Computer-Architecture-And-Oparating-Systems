@@ -2,26 +2,32 @@
 #include <signal.h>
 #include <unistd.h>
 
+struct sigaction sig_act;
+
 int signalCounter = 0;
 
 void signal_handler(int signum)
 {
-    printf(" Recieved signal %d\n", signum);
     signalCounter++;
+}
+void sigFunctionSet(void(*f)(int sig)) {
+    sig_act.sa_handler = signal_handler;
+    if(sigaction(10, &sig_act, NULL) == -1){
+        printf("Can't catch signal \n");
+    }
 }
 
 int main(void)
 {
-    signal(SIGUSR1, signal_handler);
+    printf("pid: %d\n",getpid());
 
-    for(int i = 0; i < 5; i++)
+    sigFunctionSet(signal_handler);
+
+    while(1)
     {
-        printf("Sending signal SIGUSR1\n");
-        raise(SIGUSR1);
-        sleep(1);
+        pause();
+        printf(" Recieved %d signals\n", signalCounter);
     }
-
-    printf("Recieved %d signals SIGUSR1\n", signalCounter);
 
     return 0;
 }
